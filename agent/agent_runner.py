@@ -2,7 +2,7 @@ import json
 from langchain_ollama import ChatOllama
 from langchain_core.output_parsers import StrOutputParser
 
-from agent.mvel_parser import parse_mvel_branches
+from agent.tools.mvel_parser import parse_mvel_branches
 from agent.prompts import ENGLISH_PROMPT
 
 def run_agent(mvel_text: str, model: str = "llama3.1") -> str:
