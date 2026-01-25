@@ -1,0 +1,7 @@
+if (applicant.age >= 18 && applicant.income < 40000) {
+    decision = "APPROVE";
+} else if (applicant.hasCosigner) {
+    decision = "REVIEW";
+} else {
+    decision = "DENY";
+}
