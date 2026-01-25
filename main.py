@@ -1,26 +1,28 @@
-"""
-main.py is just a CLI wrapper: 
-it reads an MVEL file from disk, 
-picks an Ollama model name, 
-calls run_agent, 
-and prints the English.
-"""
-import sys
-from agent.agent_runner import run_agent
+import argparse
+from agent.runner import run
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python main.py path/to/rule.mvel [model]")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="MVEL -> English agentic system")
+    parser.add_argument("--mode", default="agentic",
+                        choices=["explain", "verify", "tests", "diff", "agentic"],
+                        help="Run mode")
+    parser.add_argument("--model", default="llama3.1", help="Ollama model name")
+    parser.add_argument("--trace", action="store_true", help="Write trace log to runs/")
+    parser.add_argument("files", nargs="+", help="One MVEL file (or two for diff)")
+    args = parser.parse_args()
 
-    path = sys.argv[1]
-    model = sys.argv[2] if len(sys.argv) > 2 else "llama3.1"
+    if args.mode == "diff" and len(args.files) != 2:
+        raise SystemExit("diff mode requires two files: old.mvel new.mvel")
+    if args.mode != "diff" and len(args.files) != 1:
+        raise SystemExit(f"{args.mode} mode requires exactly one file")
 
-    with open(path, "r", encoding="utf-8") as f:
-        mvel_text = f.read()
+    texts = []
+    for p in args.files:
+        with open(p, "r", encoding="utf-8", errors="replace") as f:
+            texts.append(f.read())
 
-    english = run_agent(mvel_text, model=model)
-    print("\n" + english + "\n")
+    result = run(mode=args.mode, mvel_texts=texts, model=args.model, enable_trace=args.trace)
+    print(result)
 
 if __name__ == "__main__":
     main()
