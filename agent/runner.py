@@ -32,8 +32,8 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
     """
     # 1) Initialize shared resources
     llm = get_llm(model=model, temperature=0.0)  # deterministic
-    mem = load_memory()
-    mem_context = format_context_from_memory(mem)
+    mem = load_memory() #load user settings and domain mapping 
+    mem_context = format_context_from_memory(mem)  
 
     trace = Trace(enabled=enable_trace)
     trace.log_step("start", {"mode": mode, "model": model, "inputs": len(mvel_texts)})
