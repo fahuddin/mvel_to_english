@@ -181,7 +181,6 @@ REFLECT_PROMPT = ChatPromptTemplate.from_messages([
      "Return JSON like:\n"
      "{{\n"
      "  \"ok\": true,\n"
-     "  \"confidence\": 0.0,\n"
      "  \"issues\": [\"...\"]\n"
      "}}\n\n"
      "Rule extraction:\n{extraction_json}\n\n"
