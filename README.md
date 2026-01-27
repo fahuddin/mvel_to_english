@@ -9,14 +9,13 @@ An agentic AI system that parses MVEL business rules, explains them in plain Eng
 - Outputs a human-readable explanation
 
 
-## Project Structure
 🧠 Why This Is Agentic AI
 
 This system demonstrates true agentic behavior:
 
 🧭 Planning – dynamically selects execution steps
 
-🛠️ Tool use – parser, RAG, checker, coverage, etc.
+🛠️ Tool use – parser, RAG, checker etc.
 
 🔍 Self-verification – checks its own explanations
 
@@ -31,7 +30,7 @@ This system demonstrates true agentic behavior:
 This goes far beyond “prompt → response”.
 
 
-
+## Project Structure
 agentic_ai/
 ├── main.py                       # CLI entry point
 ├── agent/
