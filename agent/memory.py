@@ -6,6 +6,23 @@ from typing import Any, Dict
 MEM_DIR = "memory"
 USER_PROFILE = os.path.join(MEM_DIR, "user_profile.json")
 MAPPINGS = os.path.join(MEM_DIR, "mappings.json")
+MEM_PATH = os.path.join(os.path.dirname(__file__), "..", "memory.json")
+
+
+def save_memory_item(item: Dict[str, Any]) -> None:
+    os.makedirs(os.path.dirname(MEM_PATH), exist_ok=True)
+    data = []
+    print(MEM_PATH)
+    if os.path.isfile(MEM_PATH):
+        try:
+            with open(MEM_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f) or []
+        except Exception:
+            data = []
+    data.append(item)
+    with open(MEM_PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+        
 
 
 def _read_json(path: str, default: Any) -> Any:

@@ -4,7 +4,7 @@ from typing import List
 
 from agent.agents.reflect import reflect
 from agent.llm import get_llm
-from agent.memory import load_memory, format_context_from_memory
+from agent.memory import load_memory, format_context_from_memory,save_memory_item
 from agent.tracing import Trace
 
 from agent.tools.mvel_parser_tool import parse_mvel_branches
@@ -118,6 +118,7 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
         elif step == "reflect":
             r = reflect(llm, extractions[-1], english)
             trace.log_step("reflect", {"issues": len(r.issues)})
+            save_memory_item({"type": "reflection_issue", "issues": r.issues[:5]})
         elif step == "generate_tests":
             if not extractions:
                 tests_json = [{"name": "error", "input": {}, "expected": {}, "note": "No extraction available"}]
