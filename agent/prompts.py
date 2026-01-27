@@ -158,7 +158,6 @@ TESTS_PROMPT = ChatPromptTemplate.from_messages([
         "user",
         "Given the rule extraction below, generate test cases that cover ALL branches.\n\n"
         "Requirements:\n"
-        "1) Create at least one test per branch (including DEFAULT/else).\n"
         "2) Inputs must use the same field paths referenced in the rule conditions/actions (e.g., applicant.age).\n"
         "3) Expected must include ALL output assignments performed by the branch taken (do NOT return an empty expected if the rule assigns outputs).\n"
         "4) Prefer boundary values (e.g., equals threshold) where relevant.\n\n"
