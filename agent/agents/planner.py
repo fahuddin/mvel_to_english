@@ -26,8 +26,8 @@ def plan_steps(llm, mode: str) -> List[str]:
         if mode == "tests":
             return ["parse", "generate_tests"]
         if mode == "verify":
-            return ["parse", "static_checks", "retrieve_context", "explain", "verify", "rewrite"]
+            return ["parse", "static_checks", "retrieve_context", "explain", "verify", "rewrite", "reflect"]
         if mode == "explain":
-            return ["parse", "retrieve_context", "explain"]
+            return ["parse", "retrieve_context", "explain", "reflect"]
         return ["parse", "static_checks", "retrieve_context", "explain", "verify", "rewrite"]
     return steps

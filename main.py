@@ -4,7 +4,7 @@ from agent.runner import run
 def main():
     parser = argparse.ArgumentParser(description="MVEL -> English agentic system")
     parser.add_argument("--mode", default="agentic",
-                        choices=["explain", "verify", "tests", "diff", "agentic"],
+                        choices=["explain", "verify", "tests", "diff", "agentic", "reflect"],
                         help="Run mode")
     parser.add_argument("--model", default="llama3.1", help="Ollama model name")
     parser.add_argument("--trace", action="store_true", help="Write trace log to runs/")
