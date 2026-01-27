@@ -31,28 +31,31 @@ This goes far beyond “prompt → response”.
 
 
 agentic_ai/
-├── main.py
+├── main.py                       # CLI entry point
 ├── agent/
-│   ├── runner.py              # Orchestrator
-│   ├── llm.py                 # LLM loader (Ollama)
-│   ├── memory.py              # Persistent memory
-│   ├── tracing.py             # Run tracing
-│   ├── types.py               # Agent schemas
+│   ├── runner.py                 # Orchestrator (agent loop)
+│   ├── llm.py                    # LLM loader (Ollama)
+│   ├── memory.py                 # Persistent agent memory
+│   ├── tracing.py                # Execution tracing
+│   ├── types.py                  # Agent schemas / dataclasses
 │   ├── agents/
-│   │   ├── planner.py
-│   │   ├── explainer.py
-│   │   ├── verifier.py
-│   │   ├── reflect.py
-│   │   ├── tests.py
-│   │   └── diff.py
+│   │   ├── planner.py            # Planning agent
+│   │   ├── explainer.py          # Rule explainer
+│   │   ├── verifier.py           # Explanation verifier
+│   │   ├── reflect.py            # Reflection / critique agent
+│   │   ├── tests.py              # Test generation agent
+│   │   └── diff.py               # Rule diff agent
 │   └── tools/
-│       ├── mvel_parser_tool.py
-│       ├── static_checker_tool.py
-│       ├── rag.py
-|       |── dir/                # Knowledge base for RAG
-├── runs/                       # Execution traces
-└── examples/
-    └── rule.mvel
+│       ├── mvel_parser_tool.py   # MVEL parser
+│       ├── static_checker_tool.py# Static rule checks
+│       ├── rag.py                # RAG retrieval logic
+│       └── dir/                  # 📚 Knowledge base for RAG
+│           └── rules.md
+├── runs/                         # Execution trace outputs
+├── examples/
+│   └── rule.mvel                 # Sample rule
+└── README.md
+
 
 
 
