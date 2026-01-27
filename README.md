@@ -46,18 +46,18 @@ agentic_ai/
 │   │   ├── tests.py              # Test generation agent
 │   │   └── diff.py               # Rule diff agent
 │   └── tools/
-│       ├── mvel_parser_tool.py   # MVEL parser
+│       ├── mvel_parser_tool.py   # MVEL rule parser
 │       ├── static_checker_tool.py# Static rule checks
 │       ├── rag.py                # RAG retrieval logic
-│       └── dir/                  # 📚 Knowledge base for RAG
+│       └── dir/                  # Knowledge base for RAG
 │           └── rules.md
-├── runs/                         # Execution trace outputs
+├── runs/                         # Execution traces (JSON)
 ├── examples/
-│   └── rule.mvel                 # Sample rule
+│   └── rule.mvel                 # Sample MVEL rule
 └── README.md
 
 
-
+s
 
 ## Run
 ```bash
