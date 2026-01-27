@@ -8,6 +8,8 @@ An agentic AI system that parses MVEL business rules, explains them in plain Eng
 - Uses a local LLM via Ollama
 - Outputs a human-readable explanation
 
+
+## Project Structure
 🧠 Why This Is Agentic AI
 
 This system demonstrates true agentic behavior:
