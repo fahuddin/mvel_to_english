@@ -7,8 +7,8 @@ from agent.memory import load_memory, format_context_from_memory
 from agent.tracing import Trace
 
 from agent.tools.mvel_parser_tool import parse_mvel_branches
-from agent.tools.static_checks_tool import run_static_checks
-from agent.tools.retrieval_tool import retrieve_context
+from agent.tools.static_checker_tool import run_static_checks
+from agent.tools.rag import retrieve_context
 
 from agent.agents.planner import plan_steps
 from agent.agents.explainer import explain_rule
