@@ -173,3 +173,17 @@ TESTS_PROMPT = ChatPromptTemplate.from_messages([
         "{extraction_json}"
     )
 ])
+
+REFLECT_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "You are a strict reviewer. Output STRICT JSON only."),
+    ("user",
+     "Check whether the English explanation fully matches the rule extraction.\n"
+     "Return JSON like:\n"
+     "{{\n"
+     "  \"ok\": true,\n"
+     "  \"confidence\": 0.0,\n"
+     "  \"issues\": [\"...\"]\n"
+     "}}\n\n"
+     "Rule extraction:\n{extraction_json}\n\n"
+     "English explanation:\n{english}\n")
+])

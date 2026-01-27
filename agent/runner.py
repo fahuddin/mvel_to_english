@@ -2,6 +2,7 @@
 import json
 from typing import List
 
+from agent.agents.reflect import reflect
 from agent.llm import get_llm
 from agent.memory import load_memory, format_context_from_memory
 from agent.tracing import Trace
@@ -97,6 +98,7 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
 
             english = explain_rule(llm, extractions[-1], context)
             trace.log_step("explain", {"english_chars": len(english)})
+            return english
 
         elif step == "verify":
             if not extractions or not english:
@@ -113,7 +115,9 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
                 trace.log_step("rewrite", {"english_chars": len(english)})
             else:
                 trace.log_step("rewrite_skipped", {"ok": verdict.get("ok", True)})
-
+        elif step == "reflect":
+            r = reflect(llm, extractions[-1], english)
+            trace.log_step("reflect", {"issues": len(r.issues)})
         elif step == "generate_tests":
             if not extractions:
                 tests_json = [{"name": "error", "input": {}, "expected": {}, "note": "No extraction available"}]
