@@ -14,3 +14,4 @@ class AgentResult:
     issues: List[str] = field(default_factory=list)
     
     
+    
