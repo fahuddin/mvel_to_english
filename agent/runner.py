@@ -77,7 +77,7 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
         elif step == "retrieve_context":
             # Simple RAG + memory context
             # Uses first MVEL text as query signal (good enough for POC)
-            rag = retrieve_context(mvel_texts[0] if mvel_texts else "", kb_dir="kb")
+            rag = retrieve_context(mvel_texts[0] if mvel_texts else "", kb_dir="dir")
             pieces = []
             if mem_context:
                 pieces.append(mem_context)

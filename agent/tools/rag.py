@@ -1,19 +1,26 @@
 import os 
 from typing import List, Tuple 
 
-def read_files(dir: str):
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def read_files(kb_dir: str):
+    kb_path = os.path.join(BASE_DIR, kb_dir)
     docs = []
-    for name in os.listdir(dir):
-        path = os.path.join(dir, name)
-        with open(path, "r", encoding="utf-8", errors="replace") as f: 
-            docs.append((name, f.read()))
+    if not os.path.isdir(kb_path):
+        return docs
+
+    for name in os.listdir(kb_path):
+        path = os.path.join(kb_path, name)
+        if os.path.isfile(path):
+            with open(path, "r", encoding="utf-8", errors="replace") as f:
+                docs.append((name, f.read()))
     return docs
 
 
 #return context to llm
-def retrieve_context(query_text: str, kb_dir: str = "kb", max_snippets: int = 5) -> str: 
+def retrieve_context(query_text: str, kb_dir: str = "dir", max_snippets: int = 5) -> str: 
     """ Simple keyword RAG (no embeddings): find lines containing query keywords. """ 
-    docs = read_files(dir) 
+    docs = read_files(kb_dir) 
     if not docs: 
         return "" # naive keywords: long-ish tokens 
     tokens = [t.strip("(){}[];,.") for t in query_text.split()] 

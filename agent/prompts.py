@@ -31,7 +31,7 @@ PLANNER_PROMPT = ChatPromptTemplate.from_messages([
         "- mode=diff -> [parse, parse, diff]\n"
         "- mode=agentic -> choose the safest default (like verify)\n\n"
         "Return JSON only in this format:\n"
-        "{ \"steps\": [\"step1\", \"step2\", ...] }\n\n"
+        "{{ \"steps\": [\"step1\", \"step2\", ...] }}\n\n"
         "mode: {mode}"
     )
 ])
