@@ -81,4 +81,34 @@ class MiniRedis:
         s.sendall(payload)
         self.parse(s)
         s.close()
-        
+    
+     # Convenience methods
+    def get(self, key: str) -> Optional[bytes]:
+        return self.cmd("GET", key)  # type: ignore
+
+    def set(self, key: str, value: Union[str, bytes]) -> str:
+        if isinstance(value, str):
+            value = value.encode()
+        return self.cmd("SET", key, value)  # type: ignore
+
+    def setex(self, key: str, ttl_seconds: int, value: Union[str, bytes]) -> str:
+        if isinstance(value, str):
+            value = value.encode()
+        return self.cmd("SETEX", key, ttl_seconds, value)  # type: ignore
+
+    def hset(self, key: str, field: str, value: Union[str, bytes]) -> int:
+        if isinstance(value, str):
+            value = value.encode()
+        return int(self.cmd("HSET", key, field, value))  # type: ignore
+
+    def hgetall(self, key: str) -> dict:
+        arr = self.cmd("HGETALL", key)
+        if arr is None:
+            return {}
+        items = list(arr)  # type: ignore
+        out = {}
+        for i in range(0, len(items), 2):
+            k = items[i].decode()
+            v = items[i + 1]
+            out[k] = v.decode() if isinstance(v, (bytes, bytearray)) else v
+        return out
