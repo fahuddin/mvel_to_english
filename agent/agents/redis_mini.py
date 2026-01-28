@@ -31,6 +31,6 @@ class MiniRedis:
             ch = s.recv(1)
             if not ch:
                 raise ConnectionError("Redis connection closed")
-            buf += ch
+            buff += ch
             if len(buff) >= 2 and buff[-2:] == b"\r\n":
                 return bytes(buff[:-2])
