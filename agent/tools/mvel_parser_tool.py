@@ -154,3 +154,21 @@ def parse_mvel_branches(mvel_text: str) -> Dict[str, Any]:
         "variables": sorted(variables), # referenced identifiers (approx)
         "outputs": sorted(outputs),     # assignment LHS fields
     }
+
+
+if __name__ == "__main__":
+    demo = r'''
+    // globals
+    decision = "REVIEW"; reasons = [];
+
+    if (applicant.age < 18) {
+        decision = "DENY";
+        reasons.add("UNDERAGE");
+    } else if (fraudScore >= 80) {
+        decision="DENY"; reasons.add("HIGH_FRAUD_SCORE");
+    } else {
+        decision = "APPROVE";
+    }
+    '''
+    out = parse_mvel_branches(demo)
+    print(out)
