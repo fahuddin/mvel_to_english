@@ -195,4 +195,5 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
 
     trace.finish(english)
     trace.write()
+    set_cached_explanation(rule_hash, english)
     return english
