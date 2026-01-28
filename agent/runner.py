@@ -84,7 +84,7 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
 
     # 4) Execute the plan
     for step in steps:
-        rule_hash = None
+        rule_hash: str | None = None
         if step == "parse":
             idx = len(extractions)
             if idx >= len(mvel_texts):
@@ -153,7 +153,6 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
                 verdict = {"ok": False, "missing": ["verify: missing extraction or english"], "rewrite_needed": True}
             else:
                 verdict = verify_explanation(llm, extractions[-1], english)
-                set_cached_explanation(rule_hash, verdict)
 
             trace.log_step("verify", verdict)
 
@@ -195,5 +194,4 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
 
     trace.finish(english)
     trace.write()
-    set_cached_explanation(rule_hash, english)
     return english
