@@ -46,7 +46,7 @@ class MiniRedis:
         return bytes(data)
 
  
-    def parse(self, s: socket.socket) -> RespVal:
+    def parse(self, s: socket.socket):
             prefix = self.readexact(s, 1)
 
             if prefix == b"+":  # simple string
