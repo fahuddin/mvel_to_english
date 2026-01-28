@@ -34,3 +34,12 @@ class MiniRedis:
             buff += ch
             if len(buff) >= 2 and buff[-2:] == b"\r\n":
                 return bytes(buff[:-2])
+            
+    def _readexact(self, s: socket.socket, n: int) -> bytes:
+        data = bytearray()
+        while len(data) < n:
+            chunk = s.recv(n - len(data))
+            if not chunk:
+                raise ConnectionError("Redis connection closed")
+            data += chunk
+        return bytes(data)
