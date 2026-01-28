@@ -16,6 +16,9 @@ from agent.agents.explainer import explain_rule
 from agent.agents.verifier import verify_explanation, rewrite_explanation
 from agent.agents.diff import diff_rules
 from agent.agents.tests import generate_tests
+from hashlib import sha256
+from agent.agents.redis_mini import MiniRedis
+
 
 
 def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str:
@@ -35,6 +38,35 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
     llm = get_llm(model=model, temperature=0.0)  # deterministic
     mem = load_memory() #load user settings and domain mapping 
     mem_context = format_context_from_memory(mem)  
+    
+    r = MiniRedis(host="127.0.0.1", port=6379)
+
+    def hash_text(text: str) -> str:
+        return sha256(text.encode("utf-8")).hexdigest()
+    
+    def get_cached_explanation(rule_hash: str) -> str | None:
+        key = f"mvel:cache:explain:{rule_hash}"
+        raw = r.get(key)
+        if raw is None:
+            return None
+        return raw.decode("utf-8")
+    
+    def get_cached_parse(rule_hash: str) -> dict | None:
+        key = f"mvel:cache:parse:{rule_hash}"
+        raw = r.get(key)
+        if raw is None:
+            return None
+        return json.loads(raw.decode("utf-8"))
+    
+    def set_cached_parse(rule_hash: str, parsed: dict, ttl_seconds: int = 7 * 24 * 3600) -> None:
+        key = f"mvel:cache:parse:{rule_hash}"
+        r.setex(key, ttl_seconds, json.dumps(parsed))
+        
+    def set_cached_explanation(rule_hash: str, explanation: str, ttl_seconds: int = 24 * 3600) -> None:
+        key = f"mvel:cache:explain:{rule_hash}"
+        r.setex(key, ttl_seconds, explanation)
+    
+
 
     trace = Trace(enabled=enable_trace)
     trace.log_step("start", {"mode": mode, "model": model, "inputs": len(mvel_texts)})
@@ -60,7 +92,21 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
 
             extraction = parse_mvel_branches(mvel_texts[idx])
             extractions.append(extraction)
-
+            rule_hash = hash_text(extractions)
+            cache_explain = get_cached_explanation(rule_hash)
+            
+            if cache_explain is not None:
+                return "[CACHE HIT: explanation]\n" + cache_explain
+            
+            parsed = get_cached_parse(rule_hash)
+            if parsed is None:
+                parsed = parse_mvel_branches(mvel_texts[idx])
+                set_cached_parse(rule_hash, parsed)
+                parse_note = "[CACHE MISS: parsed fresh]\n"
+            else:
+                parse_note = "[CACHE HIT: parse]\n"
+                
+            
             trace.log_step("parse", {
                 "index": idx,
                 "branches": len(extraction.get("branches", [])),
@@ -97,6 +143,7 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
                 continue
 
             english = explain_rule(llm, extractions[-1], context)
+            set_cached_explanation(rule_hash, english)
             trace.log_step("explain", {"english_chars": len(english)})
             return english
 
@@ -105,6 +152,7 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
                 verdict = {"ok": False, "missing": ["verify: missing extraction or english"], "rewrite_needed": True}
             else:
                 verdict = verify_explanation(llm, extractions[-1], english)
+                set_cached_explanation(rule_hash, verdict)
 
             trace.log_step("verify", verdict)
 
@@ -112,6 +160,7 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
             # Only rewrite if verifier says it's not OK
             if verdict.get("ok") is False and extractions and english:
                 english = rewrite_explanation(llm, extractions[-1], english, verdict.get("missing", []))
+                set_cached_explanation(rule_hash, english)
                 trace.log_step("rewrite", {"english_chars": len(english)})
             else:
                 trace.log_step("rewrite_skipped", {"ok": verdict.get("ok", True)})
