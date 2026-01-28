@@ -12,6 +12,7 @@ class MiniRedis:
     def connect(self):
         s = socket.create_connection((self.host, self.port), timeout=self.timeout)
         s.settimeout(self.timeout)
+        return s
         
     def _encode(self, parts:List[Union[str, bytes, int]]):
         out = [f"*{len(parts)}\r\n".encode()]
@@ -35,7 +36,7 @@ class MiniRedis:
             if len(buff) >= 2 and buff[-2:] == b"\r\n":
                 return bytes(buff[:-2])
             
-    def _readexact(self, s: socket.socket, n: int) -> bytes:
+    def readexact(self, s: socket.socket, n: int) -> bytes:
         data = bytearray()
         while len(data) < n:
             chunk = s.recv(n - len(data))
@@ -43,3 +44,41 @@ class MiniRedis:
                 raise ConnectionError("Redis connection closed")
             data += chunk
         return bytes(data)
+
+ 
+    def parse(self, s: socket.socket) -> RespVal:
+            prefix = self.readexact(s, 1)
+
+            if prefix == b"+":  # simple string
+                return self.read_line(s).decode()
+
+            if prefix == b"-":  # error
+                err = self.read_line(s).decode()
+                raise RuntimeError(f"Redis error: {err}")
+
+            if prefix == b":":  # integer
+                return int(self.read_line(s))
+
+            if prefix == b"$":  # bulk string
+                ln = int(self.read_line(s))
+                if ln == -1:
+                    return None
+                data = self.readexact(s, ln)
+                self.readexact(s, 2)  # consume \r\n
+                return data
+
+            if prefix == b"*":  # array
+                n = int(self.read_line(s))
+                if n == -1:
+                    return None
+                return [self.parse(s) for _ in range(n)]
+
+            raise RuntimeError(f"Unknown RESP prefix: {prefix!r}")
+    
+    def cmd(self, *parts):
+        payload = self._encode(list(parts))
+        s = self.connect()
+        s.sendall(payload)
+        self.parse(s)
+        s.close()
+        
