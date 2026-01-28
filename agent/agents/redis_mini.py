@@ -78,10 +78,11 @@ class MiniRedis:
     def cmd(self, *parts):
         payload = self._encode(list(parts))
         s = self.connect()
-        s.sendall(payload)
-        self.parse(s)
-        s.close()
-    
+        try:
+            s.sendall(payload)
+            return self.parse(s)
+        finally:
+            s.close()
      # Convenience methods
     def get(self, key: str) -> Optional[bytes]:
         return self.cmd("GET", key)  # type: ignore
