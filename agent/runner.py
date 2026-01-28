@@ -97,6 +97,7 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
             # explanation cache
             cached = get_cached_explanation(rule_hash)
             if cached:
+                print("🔥 CACHE HIT: explanation")
                 return "[CACHE HIT: explanation]\n" + cached
 
             # parse cache
