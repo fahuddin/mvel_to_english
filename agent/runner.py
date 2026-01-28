@@ -63,7 +63,7 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
         r.setex(key, ttl_seconds, json.dumps(parsed))
         
     def set_cached_explanation(rule_hash: str, explanation: str, ttl_seconds: int = 24 * 3600) -> None:
-        key = f"mvel:cache:explain:{rule_hash}"
+        key = f"mvel:cache:verdict:{rule_hash}"
         r.setex(key, ttl_seconds, explanation)
     
 
@@ -84,28 +84,28 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
 
     # 4) Execute the plan
     for step in steps:
+        rule_hash = None
         if step == "parse":
             idx = len(extractions)
             if idx >= len(mvel_texts):
                 trace.log_step("parse_skipped", {"reason": "no more inputs", "idx": idx})
                 continue
 
+            rule_hash = hash_text(mvel_texts[idx])
             extraction = parse_mvel_branches(mvel_texts[idx])
-            extractions.append(extraction)
-            rule_hash = hash_text(extractions)
-            cache_explain = get_cached_explanation(rule_hash)
-            
-            if cache_explain is not None:
-                return "[CACHE HIT: explanation]\n" + cache_explain
-            
+
+            # explanation cache
+            cached = get_cached_explanation(rule_hash)
+            if cached:
+                return "[CACHE HIT: explanation]\n" + cached
+
+            # parse cache
             parsed = get_cached_parse(rule_hash)
             if parsed is None:
                 parsed = parse_mvel_branches(mvel_texts[idx])
                 set_cached_parse(rule_hash, parsed)
-                parse_note = "[CACHE MISS: parsed fresh]\n"
-            else:
-                parse_note = "[CACHE HIT: parse]\n"
-                
+
+            extractions.append(parsed)
             
             trace.log_step("parse", {
                 "index": idx,
