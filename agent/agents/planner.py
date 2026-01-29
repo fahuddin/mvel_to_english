@@ -1,7 +1,10 @@
 import json
+import logging
 from typing import List
 from langchain_core.output_parsers import StrOutputParser
 from agent.prompts import PLANNER_PROMPT
+
+logging.basicConfig(level=logging.DEBUG)
 
 def _parse_json_only(text: str) -> dict:
     text = text.strip()
@@ -18,16 +21,17 @@ def plan_steps(llm, mode: str) -> List[str]:
     chain = PLANNER_PROMPT | llm | StrOutputParser()
     raw = chain.invoke({"mode": mode})
     obj = _parse_json_only(raw)
+    logging.debug("Check obj", obj)
     steps = obj.get("steps", [])
-    # fallback safety
-    if not steps:
-        if mode == "diff":
-            return ["parse", "parse", "diff"]
-        if mode == "tests":
-            return ["parse", "generate_tests"]
-        if mode == "verify":
-            return ["parse", "static_checks", "retrieve_context", "explain", "verify", "rewrite", "reflect"]
-        if mode == "explain":
-            return ["parse", "retrieve_context", "explain", "reflect"]
-        return ["parse", "static_checks", "retrieve_context", "explain", "verify", "rewrite"]
+    logging.debug("Check steps", steps)
+    if mode == "diff":
+        return ["parse", "parse", "diff"]
+    if mode == "tests":
+        return ["parse", "generate_tests"]
+    if mode == "verify":
+        return ["parse", "static_checks", "retrieve_context", "explain", "verify", "reflect", "rewrite"]
+    if mode == "explain":
+        logging.debug("Reached explain", steps)
+        return ["parse", "retrieve_context", "explain", "reflect", "rewrite"]
+    return ["parse", "static_checks", "retrieve_context", "explain", "verify", "rewrite"]
     return steps

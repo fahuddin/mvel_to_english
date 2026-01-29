@@ -45,7 +45,7 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
         return sha256(text.encode("utf-8")).hexdigest()
     
     def get_cached_explanation(rule_hash: str) -> str | None:
-        key = f"mvel:cache:verdict:{rule_hash}"
+        key = f"mvel:cache:explain:{rule_hash}"
         raw = r.get(key)
         if raw is None:
             return None
@@ -63,10 +63,9 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
         r.setex(key, ttl_seconds, json.dumps(parsed))
         
     def set_cached_explanation(rule_hash: str, explanation: str, ttl_seconds: int = 24 * 3600) -> None:
-        key = f"mvel:cache:verdict:{rule_hash}"
+        key = f"mvel:cache:explain:{rule_hash}"
         r.setex(key, ttl_seconds, explanation)
     
-
 
     trace = Trace(enabled=enable_trace)
     trace.log_step("start", {"mode": mode, "model": model, "inputs": len(mvel_texts)})
@@ -95,10 +94,11 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
             extraction = parse_mvel_branches(mvel_texts[idx])
 
             # explanation cache
-            cached = get_cached_explanation(rule_hash)
-            if cached:
-                print("CACHE HIT: explanation")
-                return "[CACHE HIT: explanation]\n" + cached
+            if step == "explain":
+                cached = get_cached_explanation(rule_hash)
+                if cached:
+                    print("CACHE HIT: explanation")
+                    return "[CACHE HIT: explanation]\n" + cached
 
             # parse cache
             parsed = get_cached_parse(rule_hash)
@@ -162,6 +162,7 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
                 english = rewrite_explanation(llm, extractions[-1], english, verdict.get("missing", []))
                 set_cached_explanation(rule_hash, english)
                 trace.log_step("rewrite", {"english_chars": len(english)})
+                return english
             else:
                 trace.log_step("rewrite_skipped", {"ok": verdict.get("ok", True)})
         elif step == "reflect":
