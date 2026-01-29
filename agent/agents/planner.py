@@ -24,14 +24,15 @@ def plan_steps(llm, mode: str) -> List[str]:
     logging.debug("Check obj", obj)
     steps = obj.get("steps", [])
     logging.debug("Check steps", steps)
+    logging.debug("Check mode", mode)
     if mode == "diff":
         return ["parse", "parse", "diff"]
     if mode == "tests":
         return ["parse", "generate_tests"]
     if mode == "verify":
-        return ["parse", "static_checks", "retrieve_context", "explain", "verify", "reflect", "rewrite"]
+        logging.debug("Check mode", steps)
+        return ["parse", "static_checks", "retrieve_context", "reflect", "verify", "rewrite"]
     if mode == "explain":
         logging.debug("Reached explain", steps)
         return ["parse", "retrieve_context", "explain", "reflect", "rewrite"]
     return ["parse", "static_checks", "retrieve_context", "explain", "verify", "rewrite"]
-    return steps

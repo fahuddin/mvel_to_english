@@ -1,9 +1,11 @@
 import json
+import logging
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from .types import AgentResult
 from agent.prompts import REFLECT_PROMPT
 
+logging.basicConfig(level=logging.DEBUG)
 
 def reflect(llm, extraction: dict, english: str) -> AgentResult:
     chain = REFLECT_PROMPT | llm | StrOutputParser()
@@ -15,6 +17,8 @@ def reflect(llm, extraction: dict, english: str) -> AgentResult:
     if s != -1 and e != -1 and e > s:
         raw = raw[s:e+1]
     obj = json.loads(raw)
+    logging.DEBUG("REFLECT:", obj)
+    
 
     return AgentResult(
         ok=bool(obj.get("ok", False)),

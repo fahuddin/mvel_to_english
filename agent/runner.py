@@ -18,6 +18,7 @@ from agent.agents.diff import diff_rules
 from agent.agents.tests import generate_tests
 from hashlib import sha256
 from agent.agents.redis_mini import MiniRedis
+import traceback
 
 
 
@@ -93,18 +94,10 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
             rule_hash = hash_text(mvel_texts[idx])
             extraction = parse_mvel_branches(mvel_texts[idx])
 
-            # explanation cache
-            if step == "explain":
-                cached = get_cached_explanation(rule_hash)
-                if cached:
-                    print("CACHE HIT: explanation")
-                    return "[CACHE HIT: explanation]\n" + cached
-
             # parse cache
             parsed = get_cached_parse(rule_hash)
             if parsed is None:
-                parsed = parse_mvel_branches(mvel_texts[idx])
-                set_cached_parse(rule_hash, parsed)
+                set_cached_parse(rule_hash, extraction)
 
             extractions.append(parsed)
             
@@ -139,14 +132,25 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
 
         elif step == "explain":
             if not extractions:
-                english = "Could not parse any rule branches from the provided MVEL."
+                english = "could not parse any rule branches from the provided MVEL."
                 trace.log_step("explain_fallback", {"reason": "no extraction"})
                 continue
 
+            if rule_hash:
+                cached = get_cached_explanation(rule_hash)
+                if cached:
+                    trace.log_step("explain_cache_hit", {"rule_hash": rule_hash})
+                    return cached
+
             english = explain_rule(llm, extractions[-1], context)
-            set_cached_explanation(rule_hash, english)
+
+            if rule_hash:
+                set_cached_explanation(rule_hash, english)
+
             trace.log_step("explain", {"english_chars": len(english)})
             return english
+
+            
 
         elif step == "verify":
             if not extractions or not english:
@@ -166,9 +170,13 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
             else:
                 trace.log_step("rewrite_skipped", {"ok": verdict.get("ok", True)})
         elif step == "reflect":
-            r = reflect(llm, extractions[-1], english)
-            trace.log_step("reflect", {"issues": len(r.issues)})
-            save_memory_item({"type": "reflection_issue", "issues": r.issues[:5]})
+            try:
+                r = reflect(llm, extractions[-1], english)
+                trace.log_step("reflect", {"issues": len(r.issues)})
+                save_memory_item({"type": "reflection_issue", "issues": r.issues})
+            
+            except Exception:
+                traceback.print_exc()
         elif step == "generate_tests":
             if not extractions:
                 tests_json = [{"name": "error", "input": {}, "expected": {}, "note": "No extraction available"}]
