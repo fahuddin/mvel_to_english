@@ -45,7 +45,7 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
         return sha256(text.encode("utf-8")).hexdigest()
     
     def get_cached_explanation(rule_hash: str) -> str | None:
-        key = f"mvel:cache:explain:{rule_hash}"
+        key = f"mvel:cache:verdict:{rule_hash}"
         raw = r.get(key)
         if raw is None:
             return None
@@ -83,8 +83,8 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
     static_issues: List[str] = []
 
     # 4) Execute the plan
+    rule_hash: str | None = None
     for step in steps:
-        rule_hash: str | None = None
         if step == "parse":
             idx = len(extractions)
             if idx >= len(mvel_texts):
@@ -97,7 +97,7 @@ def run(mode: str, mvel_texts: List[str], model: str, enable_trace: bool) -> str
             # explanation cache
             cached = get_cached_explanation(rule_hash)
             if cached:
-                print("🔥 CACHE HIT: explanation")
+                print("CACHE HIT: explanation")
                 return "[CACHE HIT: explanation]\n" + cached
 
             # parse cache
